@@ -21,3 +21,60 @@ It confirm if the bacteria with available type strains also contain the proteins
 It also provide properties of specific bacteria (habitat, growth T, pathogenicity).  
 
 # Phylogentic trees (Nov. 2024 - Dec. 2024)
+### 1. Convert CSV file (.csv) to FASTA file (.fa)
+All of the collected data was recorded on excel file (.csv). To produce the phylogenetic trees, first, the python is used to generate fasta files of the sequences.  
+Version 
+```python
+# Python code starts here
+import pdb
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+from Bio import SeqIO
+file = open("Bacteria_genetic_comparison.csv", 'r', encoding='UTF8')
+header = file.readline()
+count = 1
+seq = ""
+seq_start = 0
+all_records = []
+for line in file:
+    line = line.rstrip()
+    if line:
+        line = line.split(',')
+        if seq_start == 1:
+            subseq = line[0].replace(' ', '').upper().rstrip()
+            if subseq[-1] == '"':
+                seq_start = 2
+                subseq = subseq[:-1]
+            seq += subseq
+
+        if line[0] == str(count):
+            seq_start = 1
+            if line[1]:
+                name = line[1]
+            seq_id = line[2] + line[3].replace('"',' ').rstrip()
+            seq = "" #protein name
+            print(line)
+
+        if seq_start == 2:
+            record = SeqRecord(
+                Seq(seq),
+                id=seq_id,
+                name=name,
+                description=name,
+            )
+            all_records.append(record)
+            seq_start = 0
+            count += 1
+
+with open('protein.fa', 'w') as handle:
+    SeqIO.write(all_records, handle, 'fasta')
+
+### 2. FastTree 
+It was used to construct phylogenetic trees from multiple sequence alignments
+
+
+
+
+
+
+
