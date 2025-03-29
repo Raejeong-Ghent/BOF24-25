@@ -1,6 +1,6 @@
-# Data Collection (Oct. 2024 - Nov. 2024)
+# Data collection (Oct. 2024 - Nov. 2024)
 ### 1. Literature Review & NCBI
-Based on the literature review, marine bacteria were listed up on excel file with the corresponded enzyme sequences from NCBI.  
+Based on the literature review, marine bacteria were listed up manually on excel file with the corresponded enzyme (Chitinase, Deacetylase, LPMO) sequences from NCBI.  +++ HOW
 By using the InterPro (InterPro 104.0), predict the presence and location of signal peptides, which is a short sequence of AA at the beginning of protein. If it is located in the extracellular region, it indicates that the enzyme will be secreted from the cell to function in the outside, which means the extracellular localization allows the enzymes to act on substrates in the environment around the cell.
   1. Copy paste of the protein sequence to the box 'Search by sequence'
   2. Press search
@@ -8,7 +8,7 @@ By using the InterPro (InterPro 104.0), predict the presence and location of sig
 
 From NCBI, checked the gene sequences to see if the listed bacteria contain any additional enzymes besides the one mentioned in each paper during literature review.
 
-### 2. BLASTp
+### 2. BLASTp Searches
 Identify protein sequences with the high identity of sequence to those in the listed bacteria.  
 ![Screen Shot 2025-03-27 at 6 37 33 PM](https://github.com/user-attachments/assets/1205a98b-5857-46aa-a8e9-c6b369024217)  
 The result shows how similar a given protein sequence (query) is to other protein sequences in a database. It describe which proteins in a database are most similar to your query. 
@@ -23,7 +23,7 @@ It also provide properties of specific bacteria (habitat, growth T, pathogenicit
 # Phylogentic trees (Nov. 2024 - Dec. 2024)
 ### 1. Convert CSV file (.csv) to FASTA file (.fa)
 All of the collected data was recorded on excel file (.csv). To produce the phylogenetic trees, first, the python is used to generate fasta files of the sequences.  
-Version 
+_Version 3.12.7_
 ```python
 # Python code starts here
 import pdb
@@ -68,9 +68,76 @@ for line in file:
 
 with open('protein.fa', 'w') as handle:
     SeqIO.write(all_records, handle, 'fasta')
+```
 
 ### 2. FastTree 
-It was used to construct phylogenetic trees from multiple sequence alignments
+It was used to construct phylogenetic trees from multiple sequence alignments. 
+Terminal-based workflow was used to complete the tasks. 
+The following terminal commands were executed using these versions:
+
+- gawk: _GNU Awk 5.3.1_
+- MAFFT: _v7.526_
+- FastTree: _v2.1.11_
+
+```shell
+gawk '/^>/ {flag=0} /bacteria_name/ {flag=1} flag {print}' protein-longnames.fa > bacteria_name_proteins.fa
+mafft bacteria_name_proteins.fa > bacteria_name_proteins-aln.fa
+FastTree bacteria_name_proteins-aln.fa > bacteria_name_proteins.tree
+```
+### 3. FigTree
+_Version 1.4.4_
+The produced file (.tree) could be opened in FigTree and it is possible to edit them such as labeling, coloring and scaling, etc.  
+
+<ins>Results</ins>  
+In total, 5 different phylogenetic trees were produced, each corresponding to specific enzyme. Upcoming object is to select marine bacteria with the greatest diversity. Thus, prioritized bacterial species that appear in more than one phylogenetic trees for the different enzymes. In other words, bacteria that produce more than one specific enzyme were selectied.  
+
+However, constructing phylogenetic tree uing manually selected dataset may not be entirely reliable, as we might have missed unannotated chitin-realted proteins or proteins annotated with unexpected names. This limitation led to explore the use of whole genome sequences.  
+
+# Select marine bacteria based on whole genome sequence (Dec. 2024 - Jan. 2025)
+### 1. Whole genome sequence collection
+The whole genome sequences of bacteria from previously recorded list are searched easily from NCBI. (Example followed)  
+
+<img width="744" alt="Screen Shot 2025-03-29 at 2 50 38 PM" src="https://github.com/user-attachments/assets/60187cd6-100e-4987-b3c4-ddaa9f71a751" />
+
+++++ HOW
+
+Whole genome sequence are too large to use online BLAST to identify protein sequences with the high identity. Thus, by suing local BLAST, compared whole genome sequences with previously constructed dataset.
+
+### 2. Local BALST
+_Version blast 2.16.0_  
+Filtering rules are applied:  
+  1. Removing sequences shorter or equal to 20 baseparis (bp)
+  2. Ignoring sequences with 100% identity, since they are identical to known ones which are not our focus obviously.
+  3. Filtering out results with a high number of mismatches.
+     * Initially, arbitrarily set the mismatch limit to 50%. If mismatch is higher than that, filtering them out.
+     * For proper filtration, use histogram to examine the distrubution of mismatches data and adjust the threshold accordingly. +++
+
+```shell
+awk -F'\t' '
+BEGIN { OFS="\t" }
+NR == 1 { print; next } # Print the header
+$4 >= 10 && $3 < 100 && $5 <= ($4 / 2) { print }
+' /mnt/data/Aquimarina_amphilecti_DSM25232.txt > filtered_output.txt
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
